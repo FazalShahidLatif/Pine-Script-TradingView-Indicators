@@ -1,0 +1,42 @@
+//@version=5
+indicator("XAUUSD Signal Assistant", shorttitle="XAU Signals", overlay=true)
+
+// Inputs
+atrLength = input.int(14, "ATR Length")
+riskPercent = input.float(1.0, "Risk %", minval=0.1, maxval=5.0)
+showSignals = input.bool(true, "Show Signals")
+
+// Calculations
+atr = ta.atr(atrLength)
+trendUp = close > ta.ema(close, 50)
+trendDown = close < ta.ema(close, 50)
+
+// Signal conditions
+buySignal = ta.crossover(close, ta.ema(close, 20)) and trendUp
+sellSignal = ta.crossunder(close, ta.ema(close, 20)) and trendDown
+
+// Plot signals
+plotshape(showSignals and buySignal, title="Buy", location=location.belowbar, color=color.green, style=shape.triangleup)
+plotshape(showSignals and sellSignal, title="Sell", location=location.abovebar, color=color.red, style=shape.triangledown)
+
+// Risk management levels
+var float slLevel = na
+var float tp1Level = na
+var float tp2Level = na
+var float tp3Level = na
+
+if buySignal
+    slLevel := close - (atr * 1.5)
+    tp1Level := close + (atr * 1.0)
+    tp2Level := close + (atr * 2.0)
+    tp3Level := close + (atr * 3.0)
+
+if sellSignal
+    slLevel := close + (atr * 1.5)
+    tp1Level := close - (atr * 1.0)
+    tp2Level := close - (atr * 2.0)
+    tp3Level := close - (atr * 3.0)
+
+// Alerts
+alertcondition(buySignal, "Buy Signal", "XAUUSD Buy")
+alertcondition(sellSignal, "Sell Signal", "XAUUSD Sell")
